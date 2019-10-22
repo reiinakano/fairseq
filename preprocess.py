@@ -20,6 +20,8 @@ import shutil
 
 
 def main(args):
+    print('NOTE: This is a modified version of the actual preprocess.py and is hacked together. '
+          'This is only used for the padded target intermediate steps experiment.')
     utils.import_user_module(args)
 
     print(args)
@@ -245,6 +247,8 @@ def main(args):
     make_all(args.source_lang, src_dict)
     if target:
         make_all(args.target_lang, tgt_dict)
+        if args.padded_target_lang:
+            make_all(args.padded_target_lang, tgt_dict)
     if args.align_suffix:
         make_all_alignments()
 

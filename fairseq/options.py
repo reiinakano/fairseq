@@ -220,6 +220,8 @@ def add_preprocess_args(parser):
                        help="source language")
     group.add_argument("-t", "--target-lang", default=None, metavar="TARGET",
                        help="target language")
+    group.add_argument("-p", "--padded-target-lang", default=None, metavar="TARGET",
+                       help="target language including extra padding in the actual target")
     group.add_argument("--trainpref", metavar="FP", default=None,
                        help="train file prefix")
     group.add_argument("--validpref", metavar="FP", default=None,
