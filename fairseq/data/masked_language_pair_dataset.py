@@ -203,10 +203,6 @@ class MaskedLanguagePairDataset(FairseqDataset):
             if self.src[index][-1] == eos:
                 src_item = self.src[index][:-1]
 
-        print('INFX', index)
-        print('source', src_item)
-        print('target', tgt_item)
-        print('mask', mask_item)
         example = {
             'id': index,
             'source': src_item,
