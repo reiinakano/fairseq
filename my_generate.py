@@ -115,7 +115,9 @@ def main(args):
             print('SRCTOKENSSHAPE', src_tokens.shape)
             print(encoder_input)
             with torch.no_grad():
-                encoder_out = model.encoder.forward(encoder_input['src_tokens'][0:1], encoder_input['src_lengths'][0:1])
+                single_src_tokens = encoder_input['src_tokens'][0:1]
+                single_src_lengths = encoder_input['src_lengths'][0:1]
+                encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
                 print(encoder_out)
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
                 prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
