@@ -280,5 +280,7 @@ class MaskedLanguagePairDataset(FairseqDataset):
         self.src.prefetch(indices)
         if self.tgt is not None:
             self.tgt.prefetch(indices)
+        if self.mask is not None:
+            self.mask.prefetch(indices)
         if self.align_dataset is not None:
             self.align_dataset.prefetch(indices)
