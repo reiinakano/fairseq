@@ -125,20 +125,19 @@ def main(args):
                 encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
                 print(encoder_out)
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
+
                 prev_output_tokens_list = [tgt_dict.eos()]
                 token_idx = 0
                 while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
                     prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
                     decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
                     decoder_out = decoder_out[0][0][token_idx]
-                    print(decoder_out)
-                    print(decoder_out.shape)
-                    print(decoder_out.argmax())
-                    print(decoder_out.argsort(descending=True))
-                    print(tgt_dict[decoder_out.argmax()])
+                    print('decoder output shape', decoder_out.shape)
                     top_indices = decoder_out.argsort(descending=True)
+                    top_indices_str = ['top 5 values']
                     for i in range(5):
-                        print(decoder_out[top_indices[i]], tgt_dict[top_indices[i]])
+                        top_indices_str.append(' {}: {} '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
+                    print('|'.join(top_indices_str))
                     prev_output_tokens_list.append(top_indices[0].item())
 
                     answer_so_far_str = ''
