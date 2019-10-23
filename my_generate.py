@@ -121,6 +121,8 @@ def main(args):
                 prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                 decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
                 print(decoder_out[0].shape)
+                print(decoder_out[0].argmax())
+                print(tgt_dict[decoder_out[0].argmax()])
             raise
 
 
