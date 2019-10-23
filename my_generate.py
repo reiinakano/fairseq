@@ -116,8 +116,8 @@ def main(args):
             print('SRCTOKENSSHAPE', src_tokens.shape)
             print(encoder_input)
             with torch.no_grad():
-                single_src_lengths = encoder_input['src_lengths'][70:71]
-                single_src_tokens = encoder_input['src_tokens'][70:71]
+                single_src_lengths = encoder_input['src_lengths'][65:66]
+                single_src_tokens = encoder_input['src_tokens'][65:66]
                 print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
                 question_str = ''
                 for i in range(len(single_src_tokens[0])):
@@ -143,7 +143,7 @@ def main(args):
                     print('|'.join(top_indices_str))
                     prev_output_tokens_list.append(top_indices[0].item())
                     calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
-                    if calc_response != '':
+                    if calc_response != '':  # If calculator responds (to an = sign)
                         if calc_response == '<err>':
                             raise Exception('calculator invalid input')
                         else:
