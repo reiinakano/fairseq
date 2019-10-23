@@ -11,6 +11,7 @@ import torch
 
 from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
+from sympy.parsing.sympy_parser import parse_expr
 
 
 def main(args):
@@ -128,6 +129,7 @@ def main(args):
 
                 prev_output_tokens_list = [tgt_dict.eos()]
                 token_idx = 0
+                symbolic_calculator = SymbolicCalculator()
                 while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
                     print('\n')
                     prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
@@ -140,6 +142,15 @@ def main(args):
                         top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
                     print('|'.join(top_indices_str))
                     prev_output_tokens_list.append(top_indices[0].item())
+                    calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
+                    if calc_response != '':
+                        if calc_response == '<err>':
+                            raise Exception('calculator invalid input')
+                        else:
+                            for char in calc_response:
+                                prev_output_tokens_list.append(tgt_dict.index(char))
+                            prev_output_tokens_list.append(tgt_dict.index('@'))
+                            token_idx += len(calc_response) + 1
 
                     answer_so_far_str = ''
                     for ind in prev_output_tokens_list:
@@ -231,6 +242,30 @@ def main(args):
         print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
 
     return scorer
+
+
+class SymbolicCalculator():
+    def __init__(self, syntax_error_symbol='<err>'):
+        self.current_equation = ''
+        self.syntax_error_symbol = syntax_error_symbol
+
+    def press(self, x: str):
+        if x == '=':
+            eq = self.current_equation
+            solution = self.solve_current_equation()
+            print('calculator responded {}={}'.format(eq, solution))
+            return solution
+        else:
+            self.current_equation += x
+            return ''
+
+    def solve_current_equation(self):
+        try:
+            solution = parse_expr(self.current_equation)
+        except SyntaxError:
+            return '<err>'
+        self.current_equation = ''
+        return str(solution)
 
 
 def cli_main():
