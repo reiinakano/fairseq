@@ -120,7 +120,7 @@ def main(args):
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
                 prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                 decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
-                print(decoder_out)
+                print(decoder_out[0].shape)
             raise
 
 
