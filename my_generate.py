@@ -115,7 +115,9 @@ def main(args):
             print('SRCTOKENSSHAPE', src_tokens.shape)
             print(encoder_input)
             with torch.no_grad():
-                print(model.encoder.forward(encoder_input['src_tokens'][0:1], encoder_input['src_lengths'][0:1]))
+                encoder_out = model.encoder.forward(encoder_input['src_tokens'][0:1], encoder_input['src_lengths'][0:1])
+                print(encoder_out)
+                print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
             raise
 
 
