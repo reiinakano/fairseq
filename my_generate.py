@@ -126,17 +126,18 @@ def main(args):
                 print(encoder_out)
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
                 prev_output_tokens_list = [tgt_dict.eos()]
-                for _ in range(3):
+                for token_idx in range(3):
                     prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
                     decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
-                    print(decoder_out[0])
-                    print(decoder_out[0].shape)
-                    print(decoder_out[0].argmax())
-                    print(decoder_out[0].argsort(descending=True))
-                    print(tgt_dict[decoder_out[0].argmax()])
-                    top_indices = decoder_out[0].argsort(descending=True)[0][0]
+                    decoder_out = decoder_out[0][0][token_idx]
+                    print(decoder_out)
+                    print(decoder_out.shape)
+                    print(decoder_out.argmax())
+                    print(decoder_out.argsort(descending=True))
+                    print(tgt_dict[decoder_out.argmax()])
+                    top_indices = decoder_out.argsort(descending=True)
                     for i in range(5):
-                        print(decoder_out[0][0][0][top_indices[i]], tgt_dict[top_indices[i]])
+                        print(decoder_out[top_indices[i]], tgt_dict[top_indices[i]])
                     prev_output_tokens_list.append(top_indices[0].item())
 
                     answer_so_far_str = ''
