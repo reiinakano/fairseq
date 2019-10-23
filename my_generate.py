@@ -136,7 +136,7 @@ def main(args):
                     top_indices = decoder_out.argsort(descending=True)
                     top_indices_str = ['top 5 values']
                     for i in range(5):
-                        top_indices_str.append(' {}: {} '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
+                        top_indices_str.append(' {.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
                     print('|'.join(top_indices_str))
                     prev_output_tokens_list.append(top_indices[0].item())
 
