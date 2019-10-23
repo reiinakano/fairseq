@@ -112,6 +112,10 @@ def main(args):
             src_len = input_size[1]
 
             print('SRCLENGTHS', src_lengths, 'BSZ', bsz, 'SRCLEN', src_len)
+            print('SRCTOKENSSHAPE', src_tokens.shape)
+            print(encoder_input)
+            with torch.no_grad():
+                print(model.encoder.forward(encoder_input['src_tokens'][0:1], encoder_input['src_lengths'][0:1]))
             raise
 
 
