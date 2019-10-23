@@ -125,16 +125,24 @@ def main(args):
                 encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
                 print(encoder_out)
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
-                prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
-                decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
-                print(decoder_out[0])
-                print(decoder_out[0].shape)
-                print(decoder_out[0].argmax())
-                print(decoder_out[0].argsort(descending=True))
-                print(tgt_dict[decoder_out[0].argmax()])
-                top_indices = decoder_out[0].argsort(descending=True)[0][0]
-                for i in range(5):
-                    print(decoder_out[0][0][0][top_indices[i]], tgt_dict[top_indices[i]])
+                prev_output_tokens_list = [tgt_dict.eos()]
+                for _ in range(3):
+                    prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
+                    decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
+                    print(decoder_out[0])
+                    print(decoder_out[0].shape)
+                    print(decoder_out[0].argmax())
+                    print(decoder_out[0].argsort(descending=True))
+                    print(tgt_dict[decoder_out[0].argmax()])
+                    top_indices = decoder_out[0].argsort(descending=True)[0][0]
+                    for i in range(5):
+                        print(decoder_out[0][0][0][top_indices[i]], tgt_dict[top_indices[i]])
+                    prev_output_tokens_list.append(top_indices[0].item())
+
+                    answer_so_far_str = ''
+                    for ind in prev_output_tokens_list:
+                        answer_so_far_str += tgt_dict[ind]
+                    print(answer_so_far_str)
             raise
 
 
