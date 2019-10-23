@@ -118,6 +118,10 @@ def main(args):
                 single_src_lengths = encoder_input['src_lengths'][40:41]
                 single_src_tokens = encoder_input['src_tokens'][40:41]
                 print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
+                question_str = ''
+                for i in range(len(single_src_tokens)):
+                    question_str += src_dict[single_src_tokens[i]]
+                print(question_str)
                 encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
                 print(encoder_out)
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
