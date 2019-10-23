@@ -6,7 +6,7 @@ from fairseq.data import (
     ConcatDataset,
     data_utils,
     indexed_dataset,
-    LanguagePairDataset,
+    MaskedLanguagePairDataset,
     PrependTokenDataset,
 )
 
@@ -17,6 +17,7 @@ def load_langpair_dataset(
     data_path, split,
     src, src_dict,
     tgt, tgt_dict,
+    mask,
     combine, dataset_impl, upsample_primary,
     left_pad_source, left_pad_target, max_source_positions,
     max_target_positions, prepend_bos=False, load_alignments=False,
@@ -27,6 +28,7 @@ def load_langpair_dataset(
 
     src_datasets = []
     tgt_datasets = []
+    mask_datasets = []
 
     for k in itertools.count():
         split_k = split + (str(k) if k > 0 else '')
@@ -34,8 +36,10 @@ def load_langpair_dataset(
         # infer langcode
         if split_exists(split_k, src, tgt, src, data_path):
             prefix = os.path.join(data_path, '{}.{}-{}.'.format(split_k, src, tgt))
+            assert split_exists(split_k, src, tgt, mask, data_path)
         elif split_exists(split_k, tgt, src, src, data_path):
             prefix = os.path.join(data_path, '{}.{}-{}.'.format(split_k, tgt, src))
+            assert split_exists(split_k, tgt, src, mask, data_path)
         else:
             if k > 0:
                 break
@@ -48,6 +52,9 @@ def load_langpair_dataset(
         tgt_datasets.append(
             data_utils.load_indexed_dataset(prefix + tgt, tgt_dict, dataset_impl)
         )
+        mask_datasets.append(
+          data_utils.load_indexed_dataset(prefix + mask, tgt_dict, dataset_impl)
+        )
 
         print('| {} {} {}-{} {} examples'.format(data_path, split_k, src, tgt, len(src_datasets[-1])))
 
@@ -55,19 +62,22 @@ def load_langpair_dataset(
             break
 
     assert len(src_datasets) == len(tgt_datasets)
+    assert len(tgt_datasets) == len(mask_datasets)
 
     if len(src_datasets) == 1:
-        src_dataset, tgt_dataset = src_datasets[0], tgt_datasets[0]
+        src_dataset, tgt_dataset, mask_dataset = src_datasets[0], tgt_datasets[0], mask_datasets[0]
     else:
         sample_ratios = [1] * len(src_datasets)
         sample_ratios[0] = upsample_primary
         src_dataset = ConcatDataset(src_datasets, sample_ratios)
         tgt_dataset = ConcatDataset(tgt_datasets, sample_ratios)
+        mask_dataset = ConcatDataset(mask_datasets, sample_ratios)
 
     if prepend_bos:
         assert hasattr(src_dict, "bos_index") and hasattr(tgt_dict, "bos_index")
         src_dataset = PrependTokenDataset(src_dataset, src_dict.bos())
         tgt_dataset = PrependTokenDataset(tgt_dataset, tgt_dict.bos())
+        mask_dataset = PrependTokenDataset(mask_dataset, tgt_dict.bos())
 
     align_dataset = None
     if load_alignments:
@@ -75,9 +85,10 @@ def load_langpair_dataset(
         if indexed_dataset.dataset_exists(align_path, impl=dataset_impl):
             align_dataset = data_utils.load_indexed_dataset(align_path, None, dataset_impl)
 
-    return LanguagePairDataset(
+    return MaskedLanguagePairDataset(
         src_dataset, src_dataset.sizes, src_dict,
         tgt_dataset, tgt_dataset.sizes, tgt_dict,
+        mask_dataset,
         left_pad_source=left_pad_source,
         left_pad_target=left_pad_target,
         max_source_positions=max_source_positions,
@@ -118,6 +129,8 @@ class MaskedTranslationTask(FairseqTask):
                             help='source language')
         parser.add_argument('-t', '--target-lang', default=None, metavar='TARGET',
                             help='target language')
+        parser.add_argument('-m', '--masked-target-lang', default=None, metavar='MASK',
+                            help='masked target language')
         parser.add_argument('--lazy-load', action='store_true',
                             help='load the dataset lazily')
         parser.add_argument('--raw-text', action='store_true',
@@ -164,6 +177,8 @@ class MaskedTranslationTask(FairseqTask):
             args.source_lang, args.target_lang = data_utils.infer_language_pair(paths[0])
         if args.source_lang is None or args.target_lang is None:
             raise Exception('Could not infer language pair, please provide it explicitly')
+        if args.masked_target_lang is None:
+            args.masked_target_lang = 'pa'
 
         # load dictionaries
         src_dict = cls.load_dictionary(os.path.join(paths[0], 'dict.{}.txt'.format(args.source_lang)))
@@ -187,10 +202,10 @@ class MaskedTranslationTask(FairseqTask):
         data_path = paths[epoch % len(paths)]
 
         # infer langcode
-        src, tgt = self.args.source_lang, self.args.target_lang
+        src, tgt, mask = self.args.source_lang, self.args.target_lang, self.args.masked_target_lang
 
         self.datasets[split] = load_langpair_dataset(
-            data_path, split, src, self.src_dict, tgt, self.tgt_dict,
+            data_path, split, src, self.src_dict, tgt, self.tgt_dict, mask,
             combine=combine, dataset_impl=self.args.dataset_impl,
             upsample_primary=self.args.upsample_primary,
             left_pad_source=self.args.left_pad_source,
@@ -201,7 +216,7 @@ class MaskedTranslationTask(FairseqTask):
         )
 
     def build_dataset_for_inference(self, src_tokens, src_lengths):
-        return LanguagePairDataset(src_tokens, src_lengths, self.source_dictionary)
+        return MaskedLanguagePairDataset(src_tokens, src_lengths, self.source_dictionary)
 
     def max_positions(self):
         """Return the max sentence length allowed by the task."""
