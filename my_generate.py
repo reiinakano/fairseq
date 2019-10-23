@@ -127,7 +127,7 @@ def main(args):
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
                 prev_output_tokens_list = [tgt_dict.eos()]
                 token_idx = 0
-                while prev_output_tokens_list[-1] != tgt_dict.eos():
+                while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
                     prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
                     decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
                     decoder_out = decoder_out[0][0][token_idx]
