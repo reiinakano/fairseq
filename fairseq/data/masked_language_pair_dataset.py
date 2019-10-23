@@ -54,6 +54,7 @@ def collate(
 
     prev_output_tokens = None
     target = None
+    mask = None
     if samples[0].get('target', None) is not None:
         target = merge('target', left_pad=left_pad_target)
         target = target.index_select(0, sort_order)
@@ -69,6 +70,8 @@ def collate(
                 move_eos_to_beginning=True,
             )
             prev_output_tokens = prev_output_tokens.index_select(0, sort_order)
+        mask = merge('mask', left_pad=left_pad_target)
+        mask = mask.index_select(0, sort_order)
     else:
         ntokens = sum(len(s['source']) for s in samples)
 
@@ -80,7 +83,7 @@ def collate(
             'src_tokens': src_tokens,
             'src_lengths': src_lengths,
         },
-        'target': target,
+        'target': mask,
     }
     if prev_output_tokens is not None:
         batch['net_input']['prev_output_tokens'] = prev_output_tokens
@@ -189,6 +192,8 @@ class MaskedLanguagePairDataset(FairseqDataset):
             eos = self.tgt_dict.eos() if self.tgt_dict else self.src_dict.eos()
             if self.tgt and self.tgt[index][-1] != eos:
                 tgt_item = torch.cat([self.tgt[index], torch.LongTensor([eos])])
+            if self.mask and self.mask[index][-1] != eos:
+                mask_item = torch.cat([self.mask[index], torch.LongTensor([eos])])
 
         if self.remove_eos_from_source:
             eos = self.src_dict.eos()
@@ -199,6 +204,7 @@ class MaskedLanguagePairDataset(FairseqDataset):
             'id': index,
             'source': src_item,
             'target': tgt_item,
+            'mask': mask_item,
         }
         if self.align_dataset is not None:
             example['alignment'] = self.align_dataset[index]
