@@ -115,8 +115,8 @@ def main(args):
             print('SRCTOKENSSHAPE', src_tokens.shape)
             print(encoder_input)
             with torch.no_grad():
-                single_src_lengths = encoder_input['src_lengths'][40:41]
-                single_src_tokens = encoder_input['src_tokens'][40:41]
+                single_src_lengths = encoder_input['src_lengths'][70:71]
+                single_src_tokens = encoder_input['src_tokens'][70:71]
                 print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
                 question_str = ''
                 for i in range(len(single_src_tokens[0])):
