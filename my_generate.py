@@ -127,7 +127,7 @@ def main(args):
                 print(tgt_dict[decoder_out[0].argmax()])
                 top_indices = decoder_out[0].argsort(descending=True)[0][0]
                 for i in range(5):
-                    print(decoder_out[0][0][0][i], tgt_dict[top_indices[i]])
+                    print(decoder_out[0][0][0][top_indices[i]], tgt_dict[top_indices[i]])
             raise
 
 
