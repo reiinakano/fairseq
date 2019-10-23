@@ -111,6 +111,7 @@ setup(
             'fairseq-score = fairseq_cli.score:main',
             'fairseq-train = fairseq_cli.train:cli_main',
             'fairseq-validate = fairseq_cli.validate:cli_main',
+            'fairseq-my-generate = fairseq_cli.my_generate:cli_main'
         ],
     },
     cmdclass={'build_ext': cpp_extension.BuildExtension},
