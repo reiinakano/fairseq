@@ -123,6 +123,7 @@ def main(args):
                 print(decoder_out[0])
                 print(decoder_out[0].shape)
                 print(decoder_out[0].argmax())
+                print(decoder_out[0].argsort(descending=True))
                 print(tgt_dict[decoder_out[0].argmax()])
             raise
 
