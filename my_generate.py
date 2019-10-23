@@ -80,15 +80,11 @@ def main(args):
 
     # Initialize generator
     gen_timer = StopwatchMeter()
-    generator = task.build_generator(args)
 
-    # Generate and compute BLEU score
-    if args.sacrebleu:
-        scorer = bleu.SacrebleuScorer()
-    else:
-        scorer = bleu.Scorer(tgt_dict.pad(), tgt_dict.eos(), tgt_dict.unk())
     num_sentences = 0
     has_target = True
+    model = models[0]
+    generator, scorer = None, None
     with progress_bar.build_progress_bar(args, itr) as t:
         wps_meter = TimeMeter()
         for sample in t:
@@ -101,6 +97,25 @@ def main(args):
                 prefix_tokens = sample['target'][:, :args.prefix_size]
 
             gen_timer.start()
+            model.eval()
+            # model.forward normally channels prev_output_tokens into the decoder
+            # separately, but SequenceGenerator directly calls model.encoder
+            encoder_input = {
+                k: v for k, v in sample['net_input'].items()
+                if k != 'prev_output_tokens'
+            }
+            src_tokens = encoder_input['src_tokens']
+            src_lengths = (src_tokens.ne(tgt_dict.eos()) & src_tokens.ne(tgt_dict.pad())).long().sum(dim=1)
+            input_size = src_tokens.size()
+            # batch dimension goes first followed by source lengths
+            bsz = input_size[0]
+            src_len = input_size[1]
+
+            print('SRCLENGTHS', src_lengths, 'BSZ', bsz, 'SRCLEN', src_len)
+            raise
+
+
+
             hypos = task.inference_step(generator, models, sample, prefix_tokens)
             num_generated_tokens = sum(len(h[0]['tokens']) for h in hypos)
             gen_timer.stop(num_generated_tokens)
