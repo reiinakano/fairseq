@@ -17,10 +17,13 @@ def collate(
         return {}
 
     def merge(key, left_pad, move_eos_to_beginning=False):
-        return data_utils.collate_tokens(
+        print('merging {}'.format(key))
+        tokens = data_utils.collate_tokens(
             [s[key] for s in samples],
             pad_idx, eos_idx, left_pad, move_eos_to_beginning,
         )
+        print(tokens.shape)
+        return tokens
 
     def check_alignment(alignment, src_len, tgt_len):
         if alignment is None or len(alignment) == 0:

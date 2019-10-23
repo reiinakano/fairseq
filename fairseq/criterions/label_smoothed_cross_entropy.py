@@ -11,7 +11,6 @@ from . import FairseqCriterion, register_criterion
 
 
 def label_smoothed_nll_loss(lprobs, target, epsilon, ignore_index=None, reduce=True):
-    print('YOYOYOOYOY', lprobs.shape, target.shape)
     if target.dim() == lprobs.dim() - 1:
         target = target.unsqueeze(-1)
     nll_loss = -lprobs.gather(dim=-1, index=target)
