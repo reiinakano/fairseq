@@ -163,6 +163,9 @@ def main(args):
                         answer_so_far_str += tgt_dict[ind]
                     print(answer_so_far_str)
                     token_idx += 1
+                print(question_str)
+                print(tgt_str)
+                print(answer_so_far_str)
             raise
 
 
