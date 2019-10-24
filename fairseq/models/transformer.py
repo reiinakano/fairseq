@@ -750,7 +750,7 @@ def transformer_iwslt_de_en(args):
 
 
 @register_model_architecture('transformer', 'transformer_math')
-def transformer_iwslt_de_en(args):
+def transformer_math(args):
     args.encoder_embed_dim = getattr(args, 'encoder_embed_dim', 512)
     args.encoder_ffn_embed_dim = getattr(args, 'encoder_ffn_embed_dim', 2048)
     args.encoder_attention_heads = getattr(args, 'encoder_attention_heads', 8)
