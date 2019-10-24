@@ -113,7 +113,7 @@ def main(args):
                 with torch.no_grad():
                     single_src_lengths = encoder_input['src_lengths'][sample_iter:sample_iter+1]
                     single_src_tokens = encoder_input['src_tokens'][sample_iter:sample_iter+1]
-                    single_target_tokens = sample['net_input']['prev_output_tokens'][11:12]
+                    single_target_tokens = sample['net_input']['prev_output_tokens'][sample_iter:sample_iter+1]
 
                     if args.verbose:
                         print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
