@@ -125,6 +125,8 @@ def main(args):
                 for i in range(len(single_target_tokens[0])):
                     tgt_str += tgt_dict[single_target_tokens[0][i]]
                 encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
+                print('[QUESTION]', question_str)
+                print('[TARGET ANSWER]', tgt_str)
 
                 if args.verbose:
                     print(encoder_out)
@@ -160,8 +162,6 @@ def main(args):
                     for ind in prev_output_tokens_list:
                         answer_so_far_str += tgt_dict[ind]
                     token_idx += 1
-                print('[QUESTION]', question_str)
-                print('[ANSWER]', tgt_str)
                 print('[PREDICTION]', answer_so_far_str)
             raise
 
