@@ -118,7 +118,9 @@ def main(args):
             with torch.no_grad():
                 single_src_lengths = encoder_input['src_lengths'][11:12]
                 single_src_tokens = encoder_input['src_tokens'][11:12]
+                single_target_tokens = sample['net_input']['prev_output_tokens'][11:12]
                 print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
+                print('SINGLE TGT TOKENS', single_target_tokens)
                 question_str = ''
                 for i in range(len(single_src_tokens[0])):
                     question_str += src_dict[single_src_tokens[0][i]]
