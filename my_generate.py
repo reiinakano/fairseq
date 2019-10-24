@@ -160,9 +160,9 @@ def main(args):
                     for ind in prev_output_tokens_list:
                         answer_so_far_str += tgt_dict[ind]
                     token_idx += 1
-                print(question_str)
-                print(tgt_str)
-                print(answer_so_far_str)
+                print('[QUESTION]', question_str)
+                print('[ANSWER]', tgt_str)
+                print('[PREDICTION]', answer_so_far_str)
             raise
 
 
