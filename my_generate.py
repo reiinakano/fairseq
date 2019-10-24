@@ -133,13 +133,13 @@ def main(args):
                 token_idx = 0
                 symbolic_calculator = SymbolicCalculator()
                 while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
-                    print('\n')
                     prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
                     decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
                     decoder_out = decoder_out[0][0][token_idx]
                     #print('decoder output shape', decoder_out.shape)
                     top_indices = decoder_out.argsort(descending=True)
                     if args.verbose:
+                        print('\n')
                         top_indices_str = ['top 5 values']
                         for i in range(5):
                             top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
