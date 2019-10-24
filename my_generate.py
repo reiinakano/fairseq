@@ -164,84 +164,10 @@ def main(args):
                             answer_so_far_str += tgt_dict[ind]
                         token_idx += 1
                     print('[PREDICTION]', answer_so_far_str)
-            raise
 
-
-
-
-            for i, sample_id in enumerate(sample['id'].tolist()):
-                has_target = sample['target'] is not None
-
-                # Remove padding
-                src_tokens = utils.strip_pad(sample['net_input']['src_tokens'][i, :], tgt_dict.pad())
-                target_tokens = None
-                if has_target:
-                    target_tokens = utils.strip_pad(sample['target'][i, :], tgt_dict.pad()).int().cpu()
-
-                # Either retrieve the original sentences or regenerate them from tokens.
-                if align_dict is not None:
-                    src_str = task.dataset(args.gen_subset).src.get_original_text(sample_id)
-                    target_str = task.dataset(args.gen_subset).tgt.get_original_text(sample_id)
-                else:
-                    if src_dict is not None:
-                        src_str = src_dict.string(src_tokens, args.remove_bpe)
-                    else:
-                        src_str = ""
-                    if has_target:
-                        target_str = tgt_dict.string(target_tokens, args.remove_bpe, escape_unk=True)
-
-                if not args.quiet:
-                    if src_dict is not None:
-                        print('S-{}\t{}'.format(sample_id, src_str))
-                    if has_target:
-                        print('T-{}\t{}'.format(sample_id, target_str))
-
-                # Process top predictions
-                for j, hypo in enumerate(hypos[i][:args.nbest]):
-                    hypo_tokens, hypo_str, alignment = utils.post_process_prediction(
-                        hypo_tokens=hypo['tokens'].int().cpu(),
-                        src_str=src_str,
-                        alignment=hypo['alignment'],
-                        align_dict=align_dict,
-                        tgt_dict=tgt_dict,
-                        remove_bpe=args.remove_bpe,
-                    )
-
-                    if not args.quiet:
-                        print('H-{}\t{}\t{}'.format(sample_id, hypo['score'], hypo_str))
-                        print('P-{}\t{}'.format(
-                            sample_id,
-                            ' '.join(map(
-                                lambda x: '{:.4f}'.format(x),
-                                hypo['positional_scores'].tolist(),
-                            ))
-                        ))
-
-                        if args.print_alignment:
-                            print('A-{}\t{}'.format(
-                                sample_id,
-                                ' '.join(['{}-{}'.format(src_idx, tgt_idx) for src_idx, tgt_idx in alignment])
-                            ))
-
-                        if args.print_step:
-                            print('I-{}\t{}'.format(sample_id, hypo['steps']))
-
-                    # Score only the top hypothesis
-                    if has_target and j == 0:
-                        if align_dict is not None or args.remove_bpe is not None:
-                            # Convert back to tokens for evaluation with unk replacement and/or without BPE
-                            target_tokens = tgt_dict.encode_line(target_str, add_if_not_exist=True)
-                        if hasattr(scorer, 'add_string'):
-                            scorer.add_string(target_str, hypo_str)
-                        else:
-                            scorer.add(target_tokens, hypo_tokens)
-
-            num_sentences += sample['nsentences']
 
     #if has_target:
     #    print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
-
-    return scorer
 
 
 class SymbolicCalculator():
