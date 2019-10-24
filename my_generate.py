@@ -80,24 +80,16 @@ def main(args):
     ).next_epoch_itr(shuffle=False)
 
     # Initialize generator
-    gen_timer = StopwatchMeter()
-
     num_sentences = 0
     has_target = True
     model = models[0]
     generator, scorer = None, None
     with progress_bar.build_progress_bar(args, itr) as t:
-        wps_meter = TimeMeter()
         for sample in t:
             sample = utils.move_to_cuda(sample) if use_cuda else sample
             if 'net_input' not in sample:
                 continue
 
-            prefix_tokens = None
-            if args.prefix_size > 0:
-                prefix_tokens = sample['target'][:, :args.prefix_size]
-
-            gen_timer.start()
             model.eval()
             # model.forward normally channels prev_output_tokens into the decoder
             # separately, but SequenceGenerator directly calls model.encoder
@@ -112,26 +104,30 @@ def main(args):
             bsz = input_size[0]
             src_len = input_size[1]
 
-            print('SRCLENGTHS', src_lengths, 'BSZ', bsz, 'SRCLEN', src_len)
-            print('SRCTOKENSSHAPE', src_tokens.shape)
-            print(encoder_input)
+            if args.verbose:
+                print('SRCLENGTHS', src_lengths, 'BSZ', bsz, 'SRCLEN', src_len)
+                print('SRCTOKENSSHAPE', src_tokens.shape)
+
             with torch.no_grad():
                 single_src_lengths = encoder_input['src_lengths'][11:12]
                 single_src_tokens = encoder_input['src_tokens'][11:12]
                 single_target_tokens = sample['net_input']['prev_output_tokens'][11:12]
-                print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
-                print('SINGLE TGT TOKENS', single_target_tokens)
+
+                if args.verbose:
+                    print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
+                    print('SINGLE TGT TOKENS', single_target_tokens)
+
                 question_str = ''
                 for i in range(len(single_src_tokens[0])):
                     question_str += src_dict[single_src_tokens[0][i]]
-                print(question_str)
                 tgt_str = ''
                 for i in range(len(single_target_tokens[0])):
                     tgt_str += tgt_dict[single_target_tokens[0][i]]
-                print(tgt_str)
                 encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
-                print(encoder_out)
-                print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
+
+                if args.verbose:
+                    print(encoder_out)
+                    print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
 
                 prev_output_tokens_list = [tgt_dict.eos()]
                 token_idx = 0
@@ -143,10 +139,11 @@ def main(args):
                     decoder_out = decoder_out[0][0][token_idx]
                     #print('decoder output shape', decoder_out.shape)
                     top_indices = decoder_out.argsort(descending=True)
-                    top_indices_str = ['top 5 values']
-                    for i in range(5):
-                        top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
-                    print('|'.join(top_indices_str))
+                    if args.verbose:
+                        top_indices_str = ['top 5 values']
+                        for i in range(5):
+                            top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
+                        print('|'.join(top_indices_str))
                     prev_output_tokens_list.append(top_indices[0].item())
                     calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
                     if calc_response != '':  # If calculator responds (to an = sign)
@@ -161,7 +158,6 @@ def main(args):
                     answer_so_far_str = ''
                     for ind in prev_output_tokens_list:
                         answer_so_far_str += tgt_dict[ind]
-                    print(answer_so_far_str)
                     token_idx += 1
                 print(question_str)
                 print(tgt_str)
@@ -170,9 +166,6 @@ def main(args):
 
 
 
-            hypos = task.inference_step(generator, models, sample, prefix_tokens)
-            num_generated_tokens = sum(len(h[0]['tokens']) for h in hypos)
-            gen_timer.stop(num_generated_tokens)
 
             for i, sample_id in enumerate(sample['id'].tolist()):
                 has_target = sample['target'] is not None
@@ -241,14 +234,10 @@ def main(args):
                         else:
                             scorer.add(target_tokens, hypo_tokens)
 
-            wps_meter.update(num_generated_tokens)
-            t.log({'wps': round(wps_meter.avg)})
             num_sentences += sample['nsentences']
 
-    print('| Translated {} sentences ({} tokens) in {:.1f}s ({:.2f} sentences/s, {:.2f} tokens/s)'.format(
-        num_sentences, gen_timer.n, gen_timer.sum, num_sentences / gen_timer.sum, 1. / gen_timer.avg))
-    if has_target:
-        print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
+    #if has_target:
+    #    print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
 
     return scorer
 
@@ -262,7 +251,7 @@ class SymbolicCalculator():
         if x == '=':
             eq = self.current_equation
             solution = self.solve_current_equation()
-            print('calculator responded {}={}'.format(eq, solution))
+            print('[Symbolic Calculator] calculator responded {}={}'.format(eq, solution))
             return solution
         else:
             self.current_equation += x

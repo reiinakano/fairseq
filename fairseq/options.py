@@ -513,6 +513,9 @@ def add_generation_args(parser):
 
     # special decoding format for advanced decoding.
     group.add_argument('--decoding-format', default=None, type=str, choices=['unigram', 'ensemble', 'vote', 'dp', 'bs'])
+
+    # Verbose for debugging
+    group.add_argument('--verbose', action='store_true')
     # fmt: on
     return group
 
