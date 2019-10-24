@@ -108,6 +108,7 @@ def main(args):
                 print('SRCLENGTHS', src_lengths, 'BSZ', bsz, 'SRCLEN', src_len)
                 print('SRCTOKENSSHAPE', src_tokens.shape)
 
+            print('\n')
             with torch.no_grad():
                 single_src_lengths = encoder_input['src_lengths'][11:12]
                 single_src_tokens = encoder_input['src_tokens'][11:12]
