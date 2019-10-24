@@ -108,61 +108,62 @@ def main(args):
                 print('SRCLENGTHS', src_lengths, 'BSZ', bsz, 'SRCLEN', src_len)
                 print('SRCTOKENSSHAPE', src_tokens.shape)
 
-            print('\n')
-            with torch.no_grad():
-                single_src_lengths = encoder_input['src_lengths'][11:12]
-                single_src_tokens = encoder_input['src_tokens'][11:12]
-                single_target_tokens = sample['net_input']['prev_output_tokens'][11:12]
+            for sample_iter in range(bsz):
+                print('\n')
+                with torch.no_grad():
+                    single_src_lengths = encoder_input['src_lengths'][sample_iter:sample_iter+1]
+                    single_src_tokens = encoder_input['src_tokens'][sample_iter:sample_iter+1]
+                    single_target_tokens = sample['net_input']['prev_output_tokens'][11:12]
 
-                if args.verbose:
-                    print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
-                    print('SINGLE TGT TOKENS', single_target_tokens)
-
-                question_str = ''
-                for i in range(len(single_src_tokens[0])):
-                    question_str += src_dict[single_src_tokens[0][i]]
-                tgt_str = ''
-                for i in range(len(single_target_tokens[0])):
-                    tgt_str += tgt_dict[single_target_tokens[0][i]]
-                encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
-                print('[QUESTION]', question_str)
-                print('[TARGET ANSWER]', tgt_str)
-
-                if args.verbose:
-                    print(encoder_out)
-                    print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
-
-                prev_output_tokens_list = [tgt_dict.eos()]
-                token_idx = 0
-                symbolic_calculator = SymbolicCalculator()
-                while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
-                    prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
-                    decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
-                    decoder_out = decoder_out[0][0][token_idx]
-                    #print('decoder output shape', decoder_out.shape)
-                    top_indices = decoder_out.argsort(descending=True)
                     if args.verbose:
-                        print('\n')
-                        top_indices_str = ['top 5 values']
-                        for i in range(5):
-                            top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
-                        print('|'.join(top_indices_str))
-                    prev_output_tokens_list.append(top_indices[0].item())
-                    calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
-                    if calc_response != '':  # If calculator responds (to an = sign)
-                        if calc_response == '<err>':
-                            raise Exception('calculator invalid input')
-                        else:
-                            for char in calc_response:
-                                prev_output_tokens_list.append(tgt_dict.index(char))
-                            prev_output_tokens_list.append(tgt_dict.index('@'))
-                            token_idx += len(calc_response) + 1
+                        print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
+                        print('SINGLE TGT TOKENS', single_target_tokens)
 
-                    answer_so_far_str = ''
-                    for ind in prev_output_tokens_list:
-                        answer_so_far_str += tgt_dict[ind]
-                    token_idx += 1
-                print('[PREDICTION]', answer_so_far_str)
+                    question_str = ''
+                    for i in range(len(single_src_tokens[0])):
+                        question_str += src_dict[single_src_tokens[0][i]]
+                    tgt_str = ''
+                    for i in range(len(single_target_tokens[0])):
+                        tgt_str += tgt_dict[single_target_tokens[0][i]]
+                    print('[QUESTION]', question_str)
+                    print('[TARGET ANSWER]', tgt_str)
+
+                    encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
+                    if args.verbose:
+                        print(encoder_out)
+                        print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
+
+                    prev_output_tokens_list = [tgt_dict.eos()]
+                    token_idx = 0
+                    symbolic_calculator = SymbolicCalculator()
+                    while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
+                        prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
+                        decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
+                        decoder_out = decoder_out[0][0][token_idx]
+                        #print('decoder output shape', decoder_out.shape)
+                        top_indices = decoder_out.argsort(descending=True)
+                        if args.verbose:
+                            print('\n')
+                            top_indices_str = ['top 5 values']
+                            for i in range(5):
+                                top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
+                            print('|'.join(top_indices_str))
+                        prev_output_tokens_list.append(top_indices[0].item())
+                        calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
+                        if calc_response != '':  # If calculator responds (to an = sign)
+                            if calc_response == '<err>':
+                                raise Exception('calculator invalid input')
+                            else:
+                                for char in calc_response:
+                                    prev_output_tokens_list.append(tgt_dict.index(char))
+                                prev_output_tokens_list.append(tgt_dict.index('@'))
+                                token_idx += len(calc_response) + 1
+
+                        answer_so_far_str = ''
+                        for ind in prev_output_tokens_list:
+                            answer_so_far_str += tgt_dict[ind]
+                        token_idx += 1
+                    print('[PREDICTION]', answer_so_far_str)
             raise
 
 
