@@ -125,6 +125,10 @@ def main(args):
                 for i in range(len(single_src_tokens[0])):
                     question_str += src_dict[single_src_tokens[0][i]]
                 print(question_str)
+                tgt_str = ''
+                for i in range(len(single_target_tokens[0])):
+                    tgt_str += tgt_dict[single_target_tokens[0][i]]
+                print(tgt_str)
                 encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
                 print(encoder_out)
                 print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
