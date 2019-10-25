@@ -181,6 +181,9 @@ class SymbolicCalculator():
             solution = self.solve_current_equation()
             print('[Symbolic Calculator] calculator responded {}={}'.format(eq, solution))
             return solution
+        elif x == '@':
+            self.current_equation = ''
+            return ''
         else:
             self.current_equation += x
             return ''
