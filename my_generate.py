@@ -84,6 +84,7 @@ def main(args):
     has_target = True
     model = models[0]
     generator, scorer = None, None
+    total, correct = 0, 0
     with progress_bar.build_progress_bar(args, itr) as t:
         for sample in t:
             sample = utils.move_to_cuda(sample) if use_cuda else sample
@@ -125,8 +126,6 @@ def main(args):
                     tgt_str = ''
                     for i in range(len(single_target_tokens[0])):
                         tgt_str += tgt_dict[single_target_tokens[0][i]]
-                    print('[QUESTION]', question_str)
-                    print('[TARGET ANSWER]', tgt_str)
 
                     encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
                     if args.verbose:
@@ -163,7 +162,23 @@ def main(args):
                         for ind in prev_output_tokens_list:
                             answer_so_far_str += tgt_dict[ind]
                         token_idx += 1
+                    print('[QUESTION]', question_str)
+                    print('[TARGET ANSWER]', tgt_str)
                     print('[PREDICTION]', answer_so_far_str)
+                    tgt_str_trimmed = tgt_str.replace(tgt_dict.pad(), '')
+                    tgt_str_trimmed = tgt_str_trimmed.replace(tgt_dict.eos(), '')
+                    actual_answer = tgt_str_trimmed.split('@')[-1]
+                    answer_so_far_str_trimmed = answer_so_far_str.replace(tgt_dict.pad(), '')
+                    answer_so_far_str_trimmed = answer_so_far_str_trimmed.replace(tgt_dict.eos(), '')
+                    actual_prediction = answer_so_far_str_trimmed.split('@')[-1]
+                    if actual_answer == actual_prediction:
+                        print('Prediction correct')
+                        correct += 1
+                    else:
+                        print('Prediction incorrect')
+                    total += 1
+                    print('[AVERAGE SCORE SO FAR]', float(correct)/total)
+
 
 
     #if has_target:
