@@ -165,11 +165,11 @@ def main(args):
                     print('[QUESTION]', question_str)
                     print('[TARGET ANSWER]', tgt_str)
                     print('[PREDICTION]', answer_so_far_str)
-                    tgt_str_trimmed = tgt_str.replace(tgt_dict.pad(), '')
-                    tgt_str_trimmed = tgt_str_trimmed.replace(tgt_dict.eos(), '')
+                    tgt_str_trimmed = tgt_str.replace('<pad>', '')
+                    tgt_str_trimmed = tgt_str_trimmed.replace('</s>', '')
                     actual_answer = tgt_str_trimmed.split('@')[-1]
-                    answer_so_far_str_trimmed = answer_so_far_str.replace(tgt_dict.pad(), '')
-                    answer_so_far_str_trimmed = answer_so_far_str_trimmed.replace(tgt_dict.eos(), '')
+                    answer_so_far_str_trimmed = answer_so_far_str.replace('<pad>', '')
+                    answer_so_far_str_trimmed = answer_so_far_str_trimmed.replace('</s>', '')
                     actual_prediction = answer_so_far_str_trimmed.split('@')[-1]
                     if actual_answer == actual_prediction:
                         print('Prediction correct')
