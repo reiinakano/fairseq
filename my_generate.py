@@ -177,7 +177,7 @@ def main(args):
                     else:
                         print('Prediction incorrect')
                     total += 1
-                    print('[AVERAGE SCORE SO FAR]: {}/{} = {:.2f}'.format(correct, total, float(correct)/total))
+                    print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct)/total))
 
 
 
