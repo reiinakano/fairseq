@@ -162,14 +162,21 @@ def main(args):
                         for ind in prev_output_tokens_list:
                             answer_so_far_str += tgt_dict[ind]
                         token_idx += 1
-                    print('[QUESTION]', question_str)
-                    print('[TARGET ANSWER]', tgt_str)
-                    print('[PREDICTION]', answer_so_far_str)
-                    tgt_str_trimmed = tgt_str.replace('<pad>', '')
-                    tgt_str_trimmed = tgt_str_trimmed.replace('</s>', '')
+
+                    def trim_padding_and_eos(x: str):
+                        x = x.replace('<pad>', '')
+                        x = x.replace('</s>', '')
+                        return x
+
+                    question_str_trimmed = trim_padding_and_eos(question_str)
+                    tgt_str_trimmed = trim_padding_and_eos(tgt_str)
+                    answer_so_far_str_trimmed = trim_padding_and_eos(answer_so_far_str)
+
+                    print('[QUESTION]', question_str_trimmed)
+                    print('[TARGET ANSWER]', tgt_str_trimmed)
+                    print('[PREDICTION]', answer_so_far_str_trimmed)
+
                     actual_answer = tgt_str_trimmed.split('@')[-1]
-                    answer_so_far_str_trimmed = answer_so_far_str.replace('<pad>', '')
-                    answer_so_far_str_trimmed = answer_so_far_str_trimmed.replace('</s>', '')
                     actual_prediction = answer_so_far_str_trimmed.split('@')[-1]
                     if actual_answer == actual_prediction:
                         print('Prediction correct')
