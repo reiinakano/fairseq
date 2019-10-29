@@ -151,7 +151,8 @@ def main(args):
                         calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
                         if calc_response != '':  # If calculator responds (to an = sign)
                             if calc_response == '<err>':
-                                raise Exception('calculator invalid input')
+                                answer_so_far_str = 'calculator error'
+                                break
                             else:
                                 for char in calc_response:
                                     prev_output_tokens_list.append(tgt_dict.index(char))
