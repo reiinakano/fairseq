@@ -211,6 +211,7 @@ def saveAttention(input_string, output_string, attentions, filename, normalize=T
 
     if normalize:
         attention_sums = attentions.sum(axis=1, keepdims=True)
+        print(attention_sums)
         attentions = attentions / attention_sums
 
     # Set up figure with colorbar
