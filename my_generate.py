@@ -210,9 +210,8 @@ def saveAttention(input_string, output_string, attentions, filename, normalize=T
     output_string = trim_padding_and_eos(output_string)
 
     if normalize:
-        attention_sums = attentions.sum(axis=1, keepdims=True)
-        print(attention_sums)
-        attentions = attentions / attention_sums
+        attention_max = attentions.max(axis=1, keepdims=True)
+        attentions = attentions / attention_max
 
     # Set up figure with colorbar
     fig = plt.figure(figsize=(30, 15))
