@@ -143,7 +143,7 @@ def main(args):
                         token_idx = 0
                         prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                         decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
-                        decoder_out = decoder_out.log_softmax(dim=2)[0][token_idx]
+                        decoder_out = decoder_out.softmax(dim=2)[0][token_idx]
                         print('decoder output shape', decoder_out.shape)
                         top_indices = decoder_out.argsort(descending=True)
                         top_sequences = []
