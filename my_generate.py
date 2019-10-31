@@ -217,11 +217,6 @@ def main(args):
                                     print('found top sequences')
                                 break
 
-                        def trim_padding_and_eos(x: str):
-                            x = x.replace('<pad>', '')
-                            x = x.replace('</s>', '')
-                            return x
-
                         question_str_trimmed = trim_padding_and_eos(question_str)
                         tgt_str_trimmed = trim_padding_and_eos(tgt_str)
 
@@ -263,11 +258,6 @@ def main(args):
                                 answer_so_far_str += tgt_dict[ind]
                             token_idx += 1
 
-                        def trim_padding_and_eos(x: str):
-                            x = x.replace('<pad>', '')
-                            x = x.replace('</s>', '')
-                            return x
-
                         question_str_trimmed = trim_padding_and_eos(question_str)
                         tgt_str_trimmed = trim_padding_and_eos(tgt_str)
                         answer_so_far_str_trimmed = trim_padding_and_eos(answer_so_far_str)
@@ -298,6 +288,12 @@ def main(args):
 
     #if has_target:
     #    print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
+
+
+def trim_padding_and_eos(x: str):
+    x = x.replace('<pad>', '')
+    x = x.replace('</s>', '')
+    return x
 
 
 def saveAttention(input_string, output_string, attentions, filename):
