@@ -137,68 +137,73 @@ def main(args):
                         print('encoder_out shape', encoder_out['encoder_out'].shape,
                               'encoder_embedding shape', encoder_out['encoder_embedding'].shape)
 
-                    prev_output_tokens_list = [tgt_dict.eos()]
-                    token_idx = 0
-                    symbolic_calculator = SymbolicCalculator()
-                    while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
-                        prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
-                        decoder_out, other_info = model.decoder.forward(prev_output_tokens, encoder_out)
-                        decoder_out = decoder_out[0][token_idx]
-                        #print('decoder output shape', decoder_out.shape)
-                        top_indices = decoder_out.argsort(descending=True)
-                        if args.verbose:
-                            print('\n')
-                            top_indices_str = ['top 5 values']
-                            for i in range(5):
-                                top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
-                            print('|'.join(top_indices_str))
-                        prev_output_tokens_list.append(top_indices[0].item())
-                        calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
-                        if calc_response != '':  # If calculator responds (to an = sign)
-                            if calc_response == '<err>':
-                                answer_so_far_str = 'calculator error'
-                                break
-                            else:
-                                for char in calc_response:
-                                    prev_output_tokens_list.append(tgt_dict.index(char))
-                                prev_output_tokens_list.append(tgt_dict.index('@'))
-                                token_idx += len(calc_response) + 1
-
-                        answer_so_far_str = ''
-                        for ind in prev_output_tokens_list:
-                            answer_so_far_str += tgt_dict[ind]
-                        token_idx += 1
-
-                    def trim_padding_and_eos(x: str):
-                        x = x.replace('<pad>', '')
-                        x = x.replace('</s>', '')
-                        return x
-
-                    question_str_trimmed = trim_padding_and_eos(question_str)
-                    tgt_str_trimmed = trim_padding_and_eos(tgt_str)
-                    answer_so_far_str_trimmed = trim_padding_and_eos(answer_so_far_str)
-
-                    print('[QUESTION]', question_str_trimmed)
-                    print('[TARGET ANSWER]', tgt_str_trimmed)
-                    print('[PREDICTION]', answer_so_far_str_trimmed)
-
-                    actual_answer = tgt_str_trimmed.split('@')[-1]
-                    actual_prediction = answer_so_far_str_trimmed.split('@')[-1]
-                    if actual_answer == actual_prediction:
-                        print('Prediction correct')
-                        correct += 1
+                    if args.beam > 1:
+                        prev_output_tokens = torch.LongTensor()
+                        decoder_out, _ = model.decoder.forward()
+                        raise NotImplementedError
                     else:
-                        print('Prediction incorrect')
-                    total += 1
-                    print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct)/total))
+                        prev_output_tokens_list = [tgt_dict.eos()]
+                        token_idx = 0
+                        symbolic_calculator = SymbolicCalculator()
+                        while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
+                            prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
+                            decoder_out, other_info = model.decoder.forward(prev_output_tokens, encoder_out)
+                            decoder_out = decoder_out[0][token_idx]
+                            #print('decoder output shape', decoder_out.shape)
+                            top_indices = decoder_out.argsort(descending=True)
+                            if args.verbose:
+                                print('\n')
+                                top_indices_str = ['top 5 values']
+                                for i in range(5):
+                                    top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
+                                print('|'.join(top_indices_str))
+                            prev_output_tokens_list.append(top_indices[0].item())
+                            calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
+                            if calc_response != '':  # If calculator responds (to an = sign)
+                                if calc_response == '<err>':
+                                    answer_so_far_str = 'calculator error'
+                                    break
+                                else:
+                                    for char in calc_response:
+                                        prev_output_tokens_list.append(tgt_dict.index(char))
+                                    prev_output_tokens_list.append(tgt_dict.index('@'))
+                                    token_idx += len(calc_response) + 1
 
-                    if args.visualize_attention:
-                        if args.verbose:
-                            print('ATTENTION', other_info['attn'], other_info['attn'].shape)
-                        save_dir = os.path.join('attention-vis', args.gen_subset)
-                        os.makedirs(save_dir, exist_ok=True)
-                        saveAttention(question_str, tgt_str, other_info['attn'].cpu().numpy()[0],
-                                      os.path.join(save_dir, '{}.png'.format(str(total))))
+                            answer_so_far_str = ''
+                            for ind in prev_output_tokens_list:
+                                answer_so_far_str += tgt_dict[ind]
+                            token_idx += 1
+
+                        def trim_padding_and_eos(x: str):
+                            x = x.replace('<pad>', '')
+                            x = x.replace('</s>', '')
+                            return x
+
+                        question_str_trimmed = trim_padding_and_eos(question_str)
+                        tgt_str_trimmed = trim_padding_and_eos(tgt_str)
+                        answer_so_far_str_trimmed = trim_padding_and_eos(answer_so_far_str)
+
+                        print('[QUESTION]', question_str_trimmed)
+                        print('[TARGET ANSWER]', tgt_str_trimmed)
+                        print('[PREDICTION]', answer_so_far_str_trimmed)
+
+                        actual_answer = tgt_str_trimmed.split('@')[-1]
+                        actual_prediction = answer_so_far_str_trimmed.split('@')[-1]
+                        if actual_answer == actual_prediction:
+                            print('Prediction correct')
+                            correct += 1
+                        else:
+                            print('Prediction incorrect')
+                        total += 1
+                        print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct)/total))
+
+                        if args.visualize_attention:
+                            if args.verbose:
+                                print('ATTENTION', other_info['attn'], other_info['attn'].shape)
+                            save_dir = os.path.join('attention-vis', args.gen_subset)
+                            os.makedirs(save_dir, exist_ok=True)
+                            saveAttention(question_str, tgt_str, other_info['attn'].cpu().numpy()[0],
+                                          os.path.join(save_dir, '{}.png'.format(str(total))))
 
 
 
