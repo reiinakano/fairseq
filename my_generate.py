@@ -14,6 +14,7 @@ from fairseq.meters import StopwatchMeter, TimeMeter
 from sympy.parsing.sympy_parser import parse_expr
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 
 def main(args):
@@ -191,14 +192,39 @@ def main(args):
                     print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct)/total))
 
                     print(other_info['attn'], other_info['attn'].shape)
-                    plt.matshow(other_info['attn'].cpu().numpy()[0])
-                    plt.savefig('foo.png')
-                    plt.close()
+                    saveAttention(question_str, tgt_str, other_info['attn'].cpu().numpy()[0], 'foo.png')
 
 
 
     #if has_target:
     #    print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
+
+
+def saveAttention(input_string, output_string, attentions, filename):
+    def trim_padding_and_eos(x: str):
+        x = x.replace('<pad>', '_')
+        x = x.replace('</s>', '_')
+        return x
+
+    input_string = trim_padding_and_eos(input_string)
+    output_string = trim_padding_and_eos(output_string)
+
+    # Set up figure with colorbar
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(attentions.numpy(), cmap='bone')
+    fig.colorbar(cax)
+
+    # Set up axes
+    ax.set_xticklabels(list(input_string), rotation=90)
+    ax.set_yticklabels(list(output_string))
+
+    # Show label at every tick
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    plt.savefig(filename)
+    plt.close(fig)
 
 
 class SymbolicCalculator():
