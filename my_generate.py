@@ -92,7 +92,7 @@ def main(args):
     has_target = True
     model = models[0]
     generator, scorer = None, None
-    total, correct = 0, 0
+    total, correct, top_k_correct = 0, 0, 0
     with progress_bar.build_progress_bar(args, itr) as t:
         for sample in t:
             sample = utils.move_to_cuda(sample) if use_cuda else sample
@@ -240,12 +240,22 @@ def main(args):
                         actual_answer = tgt_str_trimmed.split('@')[-1]
                         actual_prediction = answer_so_far_str_trimmed.split('@')[-1]
                         if actual_answer == actual_prediction:
-                            print('Prediction correct')
+                            print('Top prediction correct')
                             correct += 1
+                            top_k_correct += 1
                         else:
-                            print('Prediction incorrect')
+                            print('Top prediction incorrect')
+                            for i in range(args.nbest):
+                                pred = trim_padding_and_eos(convert_tokens_to_string(top_sequences[i].tokens)).split('@')[-1]
+                                if actual_prediction == pred:
+                                    print('top {} prediction correct'.format(i+1))
+                                    top_k_correct += 1
+                                    break
+                            else:
+                                print('Top K predictions all incorrect')
                         total += 1
                         print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct) / total))
+                        print('[AVERAGE TOP K SO FAR]: {}/{} = {:.3f}'.format(top_k_correct, total, float(top_k_correct) / total))
 
                     else:  # DO GREEDY
                         prev_output_tokens_list = [tgt_dict.eos()]
