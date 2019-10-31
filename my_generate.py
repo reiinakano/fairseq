@@ -148,6 +148,14 @@ def main(args):
                                 string_so_far += tgt_dict[idx]
                             return string_so_far
 
+                        def pretty_print_list_sequences(sequences: List[Sequence]):
+                            x = []
+                            for seq in sequences:
+                                x.append({'tokens': seq.tokens,
+                                          'logprob': seq.logprob,
+                                          'string_tokens': convert_tokens(seq.tokens)})
+                            print(x)
+
                         token_idx = 0
                         prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                         decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
@@ -159,7 +167,8 @@ def main(args):
                             top_sequences.append(Sequence(tokens=[tgt_dict.eos(), top_indices[i].item()],
                                                           logprob=decoder_out[top_indices[i]].item()))
                         print(question_str)
-                        print('initialized top sequences', top_sequences, [convert_tokens(x.tokens) for x in top_sequences])
+                        print('initialized top sequences')
+                        pretty_print_list_sequences(top_sequences)
 
                         raise NotImplementedError
                     else:
