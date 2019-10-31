@@ -193,7 +193,6 @@ def main(args):
                     print(other_info['attn'], other_info['attn'].shape)
                     plt.matshow(other_info['attn'].cpu().numpy()[0])
                     plt.savefig('foo.png')
-                    raise
 
 
 
