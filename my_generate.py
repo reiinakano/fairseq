@@ -9,6 +9,7 @@ Translate pre-processed data with a trained model.
 
 import torch
 import os
+from collections import namedtuple
 
 from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
@@ -138,8 +139,16 @@ def main(args):
                               'encoder_embedding shape', encoder_out['encoder_embedding'].shape)
 
                     if args.beam > 1:
-                        prev_output_tokens = torch.LongTensor()
-                        decoder_out, _ = model.decoder.forward()
+                        Sequence = namedtuple('Sequence', ['tokens', 'logprob'])
+                        prev_output_tokens = torch.LongTensor([tgt_dict.eos()]).to(encoder_out['encoder_out'].device)
+                        decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
+                        decoder_out = decoder_out[0][token_idx]
+                        print('decoder output shape', decoder_out.shape)
+                        top_indices = decoder_out.argsort(descending=True)
+                        top_sequences = []
+                        for i in range(args.beam):
+                            top_sequences.append(Sequence(tokens=[tgt_dict.eos()], logprob=top_indices[i].item()))
+                        print('initialized top sequences', top_sequences)
                         raise NotImplementedError
                     else:
                         prev_output_tokens_list = [tgt_dict.eos()]
