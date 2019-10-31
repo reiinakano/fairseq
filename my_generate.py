@@ -213,7 +213,8 @@ def main(args):
                                 if seq.tokens[-1] != tgt_dict.eos() or len(seq.tokens) == 1:
                                     break
                             else:
-                                print('found top sequences')
+                                if args.verbose:
+                                    print('found top sequences')
                                 break
 
                         def trim_padding_and_eos(x: str):
@@ -226,6 +227,7 @@ def main(args):
 
                         print('[QUESTION]', question_str_trimmed)
                         print('[TARGET ANSWER]', tgt_str_trimmed)
+                        print('[TOP K SEQUENCES]')
                         pretty_print_list_sequences(top_sequences[:args.nbest], newlines=True)
 
                     else:  # DO GREEDY
