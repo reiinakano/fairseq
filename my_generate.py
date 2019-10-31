@@ -210,8 +210,19 @@ def main(args):
                                 if seq.tokens[-1] != tgt_dict.eos() or len(seq.tokens) == 1:
                                     break
                             else:
+                                print('found top sequences')
                                 break
 
+                        def trim_padding_and_eos(x: str):
+                            x = x.replace('<pad>', '')
+                            x = x.replace('</s>', '')
+                            return x
+
+                        question_str_trimmed = trim_padding_and_eos(question_str)
+                        tgt_str_trimmed = trim_padding_and_eos(tgt_str)
+
+                        print('[QUESTION]', question_str_trimmed)
+                        print('[TARGET ANSWER]', tgt_str_trimmed)
                         pretty_print_list_sequences(top_sequences)
 
                         raise NotImplementedError
