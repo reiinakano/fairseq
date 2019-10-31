@@ -210,14 +210,14 @@ def saveAttention(input_string, output_string, attentions, filename):
     output_string = trim_padding_and_eos(output_string)
 
     # Set up figure with colorbar
-    fig = plt.figure(figsize=(20, 10))
+    fig = plt.figure(figsize=(30, 15))
     ax = fig.add_subplot(111)
     cax = ax.matshow(attentions, cmap='bone')
     fig.colorbar(cax)
 
     # Set up axes
-    ax.set_xticklabels(list(input_string))
-    ax.set_yticklabels(list(output_string), rotation=-90)
+    ax.set_xticklabels([''] + list(input_string))
+    ax.set_yticklabels([''] + list(output_string), rotation=-90)
 
     # Show label at every tick
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
