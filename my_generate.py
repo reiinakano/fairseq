@@ -148,7 +148,8 @@ def main(args):
                         top_indices = decoder_out.argsort(descending=True)
                         top_sequences = []
                         for i in range(args.beam):
-                            top_sequences.append(Sequence(tokens=[tgt_dict.eos()], logprob=top_indices[i].item()))
+                            top_sequences.append(Sequence(tokens=[tgt_dict.eos(), top_indices[i].item()],
+                                                          logprob=decoder_out[top_indices[i]].item()))
                         print('initialized top sequences', top_sequences)
                         raise NotImplementedError
                     else:
