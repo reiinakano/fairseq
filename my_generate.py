@@ -183,12 +183,17 @@ def main(args):
                                 top_indices = decoder_out.argsort(descending=True)
                                 for i in range(args.beam):
                                     new_token_sequence = copy.copy(seq.tokens) + [top_indices[i].item()]
-                                    if new_token_sequence[-1] == tgt_dict.index('='):  # resolve any symbolic expressions
+                                    if top_indices[i].item() == tgt_dict.index('='):  # resolve any symbolic expressions
+                                        print('resolving')
                                         token_string = convert_tokens_to_string(seq.tokens)
+                                        print('token string', token_string)
                                         expr = token_string.split('@')[-1]
+                                        print('expr', expr)
                                         try:
                                             calculated_result = str(parse_expr(expr))
+                                            print('calculated result', calculated_result)
                                         except SyntaxError:
+                                            print('errored syntax')
                                             continue
                                         new_token_sequence += list(calculated_result)
 
