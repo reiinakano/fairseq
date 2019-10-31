@@ -8,6 +8,7 @@ Translate pre-processed data with a trained model.
 """
 
 import torch
+import os
 
 from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
@@ -191,8 +192,13 @@ def main(args):
                     total += 1
                     print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct)/total))
 
-                    print(other_info['attn'], other_info['attn'].shape)
-                    saveAttention(question_str, tgt_str, other_info['attn'].cpu().numpy()[0], 'foo.png')
+                    if args.visualize_attention:
+                        if args.verbose:
+                            print('ATTENTION', other_info['attn'], other_info['attn'].shape)
+                        save_dir = os.path.join('attention-vis', args.gen_subset)
+                        os.makedirs(save_dir, exist_ok=True)
+                        saveAttention(question_str, tgt_str, other_info['attn'].cpu().numpy()[0],
+                                      os.path.join(save_dir, '{}.png'.format(str(total))))
 
 
 

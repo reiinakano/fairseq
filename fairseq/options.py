@@ -516,6 +516,9 @@ def add_generation_args(parser):
 
     # Verbose for debugging
     group.add_argument('--verbose', action='store_true')
+
+    # Save attention plots
+    group.add_argument('--visualize-attention', action='store_true')
     # fmt: on
     return group
 
