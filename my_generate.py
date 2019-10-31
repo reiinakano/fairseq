@@ -143,7 +143,7 @@ def main(args):
                         prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
                         decoder_out, other_info = model.decoder.forward(prev_output_tokens, encoder_out)
                         print(other_info['attn'], other_info['attn'].shape)
-                        attns.append(other_info['attn'].numpy().ravel())
+                        attns.append(other_info['attn'].cpu().numpy().ravel())
                         decoder_out = decoder_out[0][token_idx]
                         #print('decoder output shape', decoder_out.shape)
                         top_indices = decoder_out.argsort(descending=True)
