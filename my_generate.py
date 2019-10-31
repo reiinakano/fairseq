@@ -142,7 +142,7 @@ def main(args):
                               'encoder_embedding shape', encoder_out['encoder_embedding'].shape)
 
                     if args.beam > 1:  # DO BEAM SEARCH
-                        Sequence = namedtuple('Sequence', ['tokens', 'logprob'])
+                        Sequence = namedtuple('Sequence', ['tokens', 'normlogprob', 'logprob'])
 
                         def convert_tokens_to_string(tokens: List[int]):
                             string_so_far = ''
@@ -156,6 +156,7 @@ def main(args):
                                 x.append({
                                     #'tokens': seq.tokens,
                                     'string_tokens': convert_tokens_to_string(seq.tokens),
+                                    'normlogprob': seq.normlogprob,
                                     'logprob': seq.logprob
                                 })
                             if not newlines:
@@ -163,22 +164,25 @@ def main(args):
                             else:
                                 [print(z) for z in x]
 
-                        token_idx = 0
                         prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                         decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
-                        decoder_out = decoder_out.log_softmax(dim=2)[0][token_idx]
+                        decoder_out = decoder_out.log_softmax(dim=2)[0][-1]
                         #print('decoder output shape', decoder_out.shape)
                         top_indices = decoder_out.argsort(descending=True)
                         top_sequences: List[Sequence] = []
                         for i in range(args.beam):
                             top_sequences.append(Sequence(tokens=[tgt_dict.eos(), top_indices[i].item()],
+                                                          normlogprob=decoder_out[top_indices[i]].item(),
                                                           logprob=decoder_out[top_indices[i]].item()))
                         if args.verbose:
                             print(question_str)
                             print('initialized top sequences')
                             pretty_print_list_sequences(top_sequences)
 
+                        token_idx = 1
                         while True:
+                            token_idx += 1
+
                             sequences_to_be_ranked: List[Sequence] = []
                             for seq in top_sequences:
                                 if seq.tokens[-1] == tgt_dict.eos() and len(seq.tokens) > 1:
@@ -202,8 +206,12 @@ def main(args):
                                         new_token_sequence += map(tgt_dict.index, list(calculated_result))
 
                                     new_log_prob = seq.logprob + decoder_out[top_indices[i]].item()
-                                    sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence, logprob=new_log_prob))
-                            sequences_to_be_ranked.sort(key=lambda x: x.logprob, reverse=True)
+                                    alpha = 0.7
+                                    len_normalizer = (((5.0 + token_idx) ** alpha) / ((5 + 1) ** alpha))
+                                    sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence,
+                                                                           normlogprob=new_log_prob/len_normalizer,
+                                                                           logprob=new_log_prob))
+                            sequences_to_be_ranked.sort(key=lambda x: x.normlogprob, reverse=True)
                             top_sequences = sequences_to_be_ranked[:args.beam]
                             if args.verbose:
                                 pretty_print_list_sequences(top_sequences)
