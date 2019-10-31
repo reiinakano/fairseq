@@ -206,7 +206,7 @@ def main(args):
                                         new_token_sequence += map(tgt_dict.index, list(calculated_result))
 
                                     new_log_prob = seq.logprob + decoder_out[top_indices[i]].item()
-                                    alpha = 0.2
+                                    alpha = 0.4
                                     len_normalizer = float(token_idx) ** alpha
                                     sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence,
                                                                            normlogprob=new_log_prob/len_normalizer,
@@ -234,6 +234,18 @@ def main(args):
                         print('[TARGET ANSWER]', tgt_str_trimmed)
                         print('[TOP K SEQUENCES]')
                         pretty_print_list_sequences(top_sequences[:args.nbest], newlines=True)
+
+                        answer_so_far_str_trimmed = trim_padding_and_eos(
+                            convert_tokens_to_string(top_sequences[0].tokens))
+                        actual_answer = tgt_str_trimmed.split('@')[-1]
+                        actual_prediction = answer_so_far_str_trimmed.split('@')[-1]
+                        if actual_answer == actual_prediction:
+                            print('Prediction correct')
+                            correct += 1
+                        else:
+                            print('Prediction incorrect')
+                        total += 1
+                        print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct) / total))
 
                     else:  # DO GREEDY
                         prev_output_tokens_list = [tgt_dict.eos()]
