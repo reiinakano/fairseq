@@ -217,7 +217,7 @@ def saveAttention(input_string, output_string, attentions, filename):
 
     # Set up axes
     ax.set_xticklabels([''] + list(input_string))
-    ax.set_yticklabels([''] + list(output_string), rotation=-90)
+    ax.set_yticklabels(list(output_string), rotation=-90)
 
     # Show label at every tick
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
