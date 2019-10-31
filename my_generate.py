@@ -10,6 +10,7 @@ Translate pre-processed data with a trained model.
 import torch
 import os
 from collections import namedtuple
+from typing import List
 
 from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
@@ -140,17 +141,25 @@ def main(args):
 
                     if args.beam > 1:
                         Sequence = namedtuple('Sequence', ['tokens', 'logprob'])
+
+                        def convert_tokens(tokens: List[int]):
+                            string_so_far = ''
+                            for idx in tokens:
+                                string_so_far += tgt_dict[idx]
+                            return string_so_far
+
                         token_idx = 0
                         prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                         decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
-                        decoder_out = decoder_out.softmax(dim=2)[0][token_idx]
+                        decoder_out = decoder_out.log_softmax(dim=2)[0][token_idx]
                         print('decoder output shape', decoder_out.shape)
                         top_indices = decoder_out.argsort(descending=True)
                         top_sequences = []
                         for i in range(args.beam):
                             top_sequences.append(Sequence(tokens=[tgt_dict.eos(), top_indices[i].item()],
                                                           logprob=decoder_out[top_indices[i]].item()))
-                        print('initialized top sequences', top_sequences)
+                        print('initialized top sequences', top_sequences, [convert_tokens(x.tokens) for x in top_sequences])
+
                         raise NotImplementedError
                     else:
                         prev_output_tokens_list = [tgt_dict.eos()]
