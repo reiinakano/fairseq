@@ -193,6 +193,7 @@ def main(args):
                     total += 1
                     print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct)/total))
 
+                    print(attns)
                     plt.matshow(attns)
                     plt.show()
                     raise
