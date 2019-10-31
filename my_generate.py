@@ -171,19 +171,27 @@ def main(args):
                         print('initialized top sequences')
                         pretty_print_list_sequences(top_sequences)
 
-                        sequences_to_be_ranked: List[Sequence] = []
-                        for seq in top_sequences:
-                            prev_output_tokens = torch.LongTensor([seq.tokens]).to(encoder_out['encoder_out'].device)
-                            decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
-                            decoder_out = decoder_out.log_softmax(dim=2)[0][-1]
-                            top_indices = decoder_out.argsort(descending=True)
-                            for i in range(args.beam):
-                                new_token_sequence = copy.copy(seq.tokens) + [top_indices[i].item()]
-                                new_log_prob = seq.logprob + decoder_out[top_indices[i]].item()
-                                sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence, logprob=new_log_prob))
-                        sequences_to_be_ranked.sort(key=lambda x: x.logprob, reverse=True)
-                        top_sequences = sequences_to_be_ranked[:3]
-                        pretty_print_list_sequences(top_sequences)
+                        while True:
+                            sequences_to_be_ranked: List[Sequence] = []
+                            for seq in top_sequences:
+                                if seq.tokens[-1] == tgt_dict.eos() and len(seq.tokens) > 1:
+                                    sequences_to_be_ranked.append(seq)
+                                    continue
+                                prev_output_tokens = torch.LongTensor([seq.tokens]).to(encoder_out['encoder_out'].device)
+                                decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
+                                decoder_out = decoder_out.log_softmax(dim=2)[0][-1]
+                                top_indices = decoder_out.argsort(descending=True)
+                                for i in range(args.beam):
+                                    new_token_sequence = copy.copy(seq.tokens) + [top_indices[i].item()]
+                                    new_log_prob = seq.logprob + decoder_out[top_indices[i]].item()
+                                    sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence, logprob=new_log_prob))
+                            if len(sequences_to_be_ranked) == args.beam:  # All are EOS
+                                print('found top sequences')
+                                pretty_print_list_sequences(sequences_to_be_ranked)
+                                break
+                            sequences_to_be_ranked.sort(key=lambda x: x.logprob, reverse=True)
+                            top_sequences = sequences_to_be_ranked[:args.beam]
+                            pretty_print_list_sequences(top_sequences)
 
                         raise NotImplementedError
                     else:
