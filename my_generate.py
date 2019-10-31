@@ -210,7 +210,7 @@ def saveAttention(input_string, output_string, attentions, filename):
     output_string = trim_padding_and_eos(output_string)
 
     # Set up figure with colorbar
-    fig = plt.figure()
+    fig = plt.figure(figsize=(20, 10))
     ax = fig.add_subplot(111)
     cax = ax.matshow(attentions, cmap='bone')
     fig.colorbar(cax)
