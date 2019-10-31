@@ -211,10 +211,15 @@ def main(args):
                                     break
                             else:
                                 print('found top sequences')
-                                pretty_print_list_sequences(top_sequences)
                                 break
 
-                        raise NotImplementedError
+                            question_str_trimmed = trim_padding_and_eos(question_str)
+                            tgt_str_trimmed = trim_padding_and_eos(tgt_str)
+
+                            print('[QUESTION]', question_str_trimmed)
+                            print('[TARGET ANSWER]', tgt_str_trimmed)
+                            pretty_print_list_sequences(top_sequences)
+
                     else:  # DO GREEDY
                         prev_output_tokens_list = [tgt_dict.eos()]
                         token_idx = 0
@@ -248,11 +253,6 @@ def main(args):
                                 answer_so_far_str += tgt_dict[ind]
                             token_idx += 1
 
-                        def trim_padding_and_eos(x: str):
-                            x = x.replace('<pad>', '')
-                            x = x.replace('</s>', '')
-                            return x
-
                         question_str_trimmed = trim_padding_and_eos(question_str)
                         tgt_str_trimmed = trim_padding_and_eos(tgt_str)
                         answer_so_far_str_trimmed = trim_padding_and_eos(answer_so_far_str)
@@ -283,6 +283,12 @@ def main(args):
 
     #if has_target:
     #    print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
+
+
+def trim_padding_and_eos(x: str):
+    x = x.replace('<pad>', '')
+    x = x.replace('</s>', '')
+    return x
 
 
 def saveAttention(input_string, output_string, attentions, filename):
