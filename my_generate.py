@@ -130,7 +130,8 @@ def main(args):
                     encoder_out = model.encoder.forward(single_src_tokens, single_src_lengths)
                     if args.verbose:
                         print(encoder_out)
-                        print(encoder_out['encoder_out'].shape, encoder_out['encoder_embedding'].shape)
+                        print('encoder_out shape', encoder_out['encoder_out'].shape,
+                              'encoder_embedding shape', encoder_out['encoder_embedding'].shape)
 
                     prev_output_tokens_list = [tgt_dict.eos()]
                     token_idx = 0
