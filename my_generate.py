@@ -140,7 +140,7 @@ def main(args):
                         print('encoder_out shape', encoder_out['encoder_out'].shape,
                               'encoder_embedding shape', encoder_out['encoder_embedding'].shape)
 
-                    if args.beam > 1:
+                    if args.beam > 1:  # DO BEAM SEARCH
                         Sequence = namedtuple('Sequence', ['tokens', 'logprob'])
 
                         def convert_tokens_to_string(tokens: List[int]):
@@ -185,16 +185,21 @@ def main(args):
                                     new_token_sequence = copy.copy(seq.tokens) + [top_indices[i].item()]
                                     new_log_prob = seq.logprob + decoder_out[top_indices[i]].item()
                                     sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence, logprob=new_log_prob))
-                            if len(sequences_to_be_ranked) == args.beam:  # All are EOS
-                                print('found top sequences')
-                                pretty_print_list_sequences(sequences_to_be_ranked)
-                                break
                             sequences_to_be_ranked.sort(key=lambda x: x.logprob, reverse=True)
                             top_sequences = sequences_to_be_ranked[:args.beam]
                             pretty_print_list_sequences(top_sequences)
 
+                            # Check if all sequences are EOS
+                            for seq in top_sequences:
+                                if seq.tokens[-1] != tgt_dict.eos() or len(seq.tokens) == 1:
+                                    break
+                            else:
+                                print('found top sequences')
+                                pretty_print_list_sequences(top_sequences)
+                                break
+
                         raise NotImplementedError
-                    else:
+                    else:  # DO GREEDY
                         prev_output_tokens_list = [tgt_dict.eos()]
                         token_idx = 0
                         symbolic_calculator = SymbolicCalculator()
