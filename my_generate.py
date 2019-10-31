@@ -195,7 +195,7 @@ def main(args):
                                         except SyntaxError:
                                             print('errored syntax')
                                             continue
-                                        new_token_sequence += list(calculated_result)
+                                        new_token_sequence += map(tgt_dict.index, list(calculated_result))
 
                                     new_log_prob = seq.logprob + decoder_out[top_indices[i]].item()
                                     sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence, logprob=new_log_prob))
