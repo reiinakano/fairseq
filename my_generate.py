@@ -150,7 +150,7 @@ def main(args):
                                 string_so_far += tgt_dict[idx]
                             return string_so_far
 
-                        def pretty_print_list_sequences(sequences: List[Sequence]):
+                        def pretty_print_list_sequences(sequences: List[Sequence], newlines=False):
                             x = []
                             for seq in sequences:
                                 x.append({
@@ -158,7 +158,10 @@ def main(args):
                                     'string_tokens': convert_tokens_to_string(seq.tokens),
                                     'logprob': seq.logprob
                                 })
-                            print(x)
+                            if not newlines:
+                                print(x)
+                            else:
+                                [print(z) for z in x]
 
                         token_idx = 0
                         prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
@@ -223,7 +226,7 @@ def main(args):
 
                         print('[QUESTION]', question_str_trimmed)
                         print('[TARGET ANSWER]', tgt_str_trimmed)
-                        pretty_print_list_sequences(top_sequences)
+                        pretty_print_list_sequences(top_sequences, newlines=True)
 
                     else:  # DO GREEDY
                         prev_output_tokens_list = [tgt_dict.eos()]
