@@ -185,19 +185,13 @@ def main(args):
                                 for i in range(args.beam):
                                     new_token_sequence = copy.copy(seq.tokens) + [top_indices[i].item()]
                                     if top_indices[i].item() == tgt_dict.index('='):  # resolve any symbolic expressions
-                                        print('resolving')
                                         token_string = convert_tokens_to_string(seq.tokens)
-                                        print('token string', token_string)
                                         expr = token_string.split('@')[-1]
-                                        print('expr', expr)
                                         try:
                                             calculated_result = str(parse_expr(expr))
-                                            print('calculated result', calculated_result)
                                         except SyntaxError:
-                                            print('errored syntax')
                                             continue
                                         except TokenError:
-                                            print('token error')
                                             continue
                                         new_token_sequence += map(tgt_dict.index, list(calculated_result))
 
