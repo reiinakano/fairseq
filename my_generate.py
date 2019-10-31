@@ -16,6 +16,7 @@ from typing import List
 from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
 from sympy.parsing.sympy_parser import parse_expr
+from sympy.parsing.sympy_tokenize import TokenError
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -194,6 +195,9 @@ def main(args):
                                             print('calculated result', calculated_result)
                                         except SyntaxError:
                                             print('errored syntax')
+                                            continue
+                                        except TokenError:
+                                            print('token error')
                                             continue
                                         new_token_sequence += map(tgt_dict.index, list(calculated_result))
 
