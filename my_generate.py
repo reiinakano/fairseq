@@ -200,7 +200,7 @@ def main(args):
     #    print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
 
 
-def saveAttention(input_string, output_string, attentions, filename, normalize=True):
+def saveAttention(input_string, output_string, attentions, filename):
     def trim_padding_and_eos(x: str):
         x = x.replace('<pad>', '_')
         x = x.replace('</s>', '_')
@@ -208,10 +208,6 @@ def saveAttention(input_string, output_string, attentions, filename, normalize=T
 
     input_string = trim_padding_and_eos(input_string)
     output_string = trim_padding_and_eos(output_string)
-
-    if normalize:
-        attention_max = attentions.max(axis=1, keepdims=True)
-        attentions = attentions / attention_max
 
     # Set up figure with colorbar
     fig = plt.figure(figsize=(30, 15))
