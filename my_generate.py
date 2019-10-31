@@ -210,9 +210,9 @@ def main(args):
                                 if seq.tokens[-1] != tgt_dict.eos() or len(seq.tokens) == 1:
                                     break
                             else:
-                                print('found top sequences')
-                                pretty_print_list_sequences(top_sequences)
                                 break
+
+                        pretty_print_list_sequences(top_sequences)
 
                         raise NotImplementedError
                     else:  # DO GREEDY
