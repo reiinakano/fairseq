@@ -153,8 +153,7 @@ def main(args):
                         def pretty_print_list_sequences(sequences: List[Sequence]):
                             x = []
                             for seq in sequences:
-                                x.append({'tokens': seq.tokens,
-                                          'string_tokens': convert_tokens_to_string(seq.tokens),
+                                x.append({'string_tokens': convert_tokens_to_string(seq.tokens),
                                           'logprob': seq.logprob})
                             print(x)
 
