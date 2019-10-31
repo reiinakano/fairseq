@@ -153,23 +153,27 @@ def main(args):
                         def pretty_print_list_sequences(sequences: List[Sequence]):
                             x = []
                             for seq in sequences:
-                                x.append({'string_tokens': convert_tokens_to_string(seq.tokens),
-                                          'logprob': seq.logprob})
+                                x.append({
+                                    #'tokens': seq.tokens,
+                                    'string_tokens': convert_tokens_to_string(seq.tokens),
+                                    'logprob': seq.logprob
+                                })
                             print(x)
 
                         token_idx = 0
                         prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                         decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
                         decoder_out = decoder_out.log_softmax(dim=2)[0][token_idx]
-                        print('decoder output shape', decoder_out.shape)
+                        #print('decoder output shape', decoder_out.shape)
                         top_indices = decoder_out.argsort(descending=True)
                         top_sequences: List[Sequence] = []
                         for i in range(args.beam):
                             top_sequences.append(Sequence(tokens=[tgt_dict.eos(), top_indices[i].item()],
                                                           logprob=decoder_out[top_indices[i]].item()))
-                        print(question_str)
-                        print('initialized top sequences')
-                        pretty_print_list_sequences(top_sequences)
+                        if args.verbose:
+                            print(question_str)
+                            print('initialized top sequences')
+                            pretty_print_list_sequences(top_sequences)
 
                         while True:
                             sequences_to_be_ranked: List[Sequence] = []
@@ -198,7 +202,8 @@ def main(args):
                                     sequences_to_be_ranked.append(Sequence(tokens=new_token_sequence, logprob=new_log_prob))
                             sequences_to_be_ranked.sort(key=lambda x: x.logprob, reverse=True)
                             top_sequences = sequences_to_be_ranked[:args.beam]
-                            pretty_print_list_sequences(top_sequences)
+                            if args.verbose:
+                                pretty_print_list_sequences(top_sequences)
 
                             # Check if all sequences are EOS
                             for seq in top_sequences:
