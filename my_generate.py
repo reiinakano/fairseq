@@ -13,6 +13,8 @@ from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
 from sympy.parsing.sympy_parser import parse_expr
 
+import matplotlib.pyplot as plt
+
 
 def main(args):
     assert args.path is not None, '--path required for generation!'
@@ -136,12 +138,13 @@ def main(args):
                     prev_output_tokens_list = [tgt_dict.eos()]
                     token_idx = 0
                     symbolic_calculator = SymbolicCalculator()
+                    attns = []
                     while prev_output_tokens_list[-1] != tgt_dict.eos() or len(prev_output_tokens_list) == 1:
                         prev_output_tokens = torch.LongTensor([prev_output_tokens_list]).to(encoder_out['encoder_out'].device)
-                        decoder_out = model.decoder.forward(prev_output_tokens, encoder_out)
-                        print(decoder_out[1]['attn'], decoder_out[1]['attn'].shape)
-                        raise
-                        decoder_out = decoder_out[0][0][token_idx]
+                        decoder_out, other_info = model.decoder.forward(prev_output_tokens, encoder_out)
+                        print(other_info['attn'], other_info['attn'].shape)
+                        attns.append(other_info['attn'].numpy().ravel())
+                        decoder_out = decoder_out[0][token_idx]
                         #print('decoder output shape', decoder_out.shape)
                         top_indices = decoder_out.argsort(descending=True)
                         if args.verbose:
@@ -189,6 +192,10 @@ def main(args):
                         print('Prediction incorrect')
                     total += 1
                     print('[AVERAGE SCORE SO FAR]: {}/{} = {:.3f}'.format(correct, total, float(correct)/total))
+
+                    plt.matshow(attns)
+                    plt.show()
+                    raise
 
 
 
