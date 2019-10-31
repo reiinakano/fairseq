@@ -226,7 +226,7 @@ def main(args):
 
                         print('[QUESTION]', question_str_trimmed)
                         print('[TARGET ANSWER]', tgt_str_trimmed)
-                        pretty_print_list_sequences(top_sequences, newlines=True)
+                        pretty_print_list_sequences(top_sequences[:args.nbest], newlines=True)
 
                     else:  # DO GREEDY
                         prev_output_tokens_list = [tgt_dict.eos()]
