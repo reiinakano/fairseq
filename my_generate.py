@@ -225,7 +225,6 @@ def main(args):
                         print('[TARGET ANSWER]', tgt_str_trimmed)
                         pretty_print_list_sequences(top_sequences)
 
-                        raise NotImplementedError
                     else:  # DO GREEDY
                         prev_output_tokens_list = [tgt_dict.eos()]
                         token_idx = 0
