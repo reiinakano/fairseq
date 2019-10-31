@@ -140,6 +140,7 @@ def main(args):
 
                     if args.beam > 1:
                         Sequence = namedtuple('Sequence', ['tokens', 'logprob'])
+                        token_idx = 0
                         prev_output_tokens = torch.LongTensor([[tgt_dict.eos()]]).to(encoder_out['encoder_out'].device)
                         decoder_out, _ = model.decoder.forward(prev_output_tokens, encoder_out)
                         decoder_out = decoder_out[0][token_idx]
