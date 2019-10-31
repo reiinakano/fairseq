@@ -247,7 +247,7 @@ def main(args):
                             print('Top prediction incorrect')
                             for i in range(args.nbest):
                                 pred = trim_padding_and_eos(convert_tokens_to_string(top_sequences[i].tokens)).split('@')[-1]
-                                if actual_prediction == pred:
+                                if actual_answer == pred:
                                     print('top {} prediction correct'.format(i+1))
                                     top_k_correct += 1
                                     break
