@@ -199,9 +199,7 @@ def main(args):
                                         expr = token_string.split('@')[-1]
                                         try:
                                             calculated_result = str(parse_expr(expr))
-                                        except SyntaxError:
-                                            continue
-                                        except TokenError:
+                                        except Exception:
                                             continue
                                         new_token_sequence += map(tgt_dict.index, list(calculated_result))
 
