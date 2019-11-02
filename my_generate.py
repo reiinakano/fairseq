@@ -272,16 +272,17 @@ def main(args):
                                     top_indices_str.append(' {:.2f} : "{}" '.format(decoder_out[top_indices[i]].item(), tgt_dict[top_indices[i]]))
                                 print('|'.join(top_indices_str))
                             prev_output_tokens_list.append(top_indices[0].item())
-                            calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
-                            if calc_response != '':  # If calculator responds (to an = sign)
-                                if calc_response == '<err>':
-                                    answer_so_far_str = 'calculator error'
-                                    break
-                                else:
-                                    for char in calc_response:
-                                        prev_output_tokens_list.append(tgt_dict.index(char))
-                                    prev_output_tokens_list.append(tgt_dict.index('@'))
-                                    token_idx += len(calc_response) + 1
+                            if not args.no_symbolic:
+                                calc_response = symbolic_calculator.press(tgt_dict[top_indices[0].item()])
+                                if calc_response != '':  # If calculator responds (to an = sign)
+                                    if calc_response == '<err>':
+                                        answer_so_far_str = 'calculator error'
+                                        break
+                                    else:
+                                        for char in calc_response:
+                                            prev_output_tokens_list.append(tgt_dict.index(char))
+                                        prev_output_tokens_list.append(tgt_dict.index('@'))
+                                        token_idx += len(calc_response) + 1
 
                             answer_so_far_str = ''
                             for ind in prev_output_tokens_list:

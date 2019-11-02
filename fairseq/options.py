@@ -519,6 +519,9 @@ def add_generation_args(parser):
 
     # Save attention plots
     group.add_argument('--visualize-attention', action='store_true')
+
+    # Don't use symbolic (for baseline calculation in my-generate)
+    group.add_argument('--no-symbolic', action='store_true')
     # fmt: on
     return group
 
