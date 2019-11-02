@@ -194,14 +194,16 @@ def main(args):
                                 top_indices = decoder_out.argsort(descending=True)
                                 for i in range(args.beam):
                                     new_token_sequence = copy.copy(seq.tokens) + [top_indices[i].item()]
-                                    if top_indices[i].item() == tgt_dict.index('='):  # resolve any symbolic expressions
-                                        token_string = convert_tokens_to_string(seq.tokens)
-                                        expr = token_string.split('@')[-1]
-                                        try:
-                                            calculated_result = str(parse_expr(expr))
-                                        except Exception:
-                                            continue
-                                        new_token_sequence += map(tgt_dict.index, list(calculated_result))
+
+                                    if not args.no_symbolic:
+                                        if top_indices[i].item() == tgt_dict.index('='):  # resolve any symbolic expressions
+                                            token_string = convert_tokens_to_string(seq.tokens)
+                                            expr = token_string.split('@')[-1]
+                                            try:
+                                                calculated_result = str(parse_expr(expr))
+                                            except Exception:
+                                                continue
+                                            new_token_sequence += map(tgt_dict.index, list(calculated_result))
 
                                     new_log_prob = seq.logprob + decoder_out[top_indices[i]].item()
                                     alpha = 0.4
