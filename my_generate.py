@@ -93,6 +93,7 @@ def main(args):
     model = models[0]
     generator, scorer = None, None
     total, correct, top_k_correct = 0, 0, 0
+    target_answers_list, predicted_answers_list = [], []
     with progress_bar.build_progress_bar(args, itr) as t:
         for sample in t:
             sample = utils.move_to_cuda(sample) if use_cuda else sample
@@ -317,8 +318,14 @@ def main(args):
                             saveAttention(question_str, tgt_str, other_info['attn'].cpu().numpy()[0],
                                           os.path.join(save_dir, '{}.png'.format(str(total))))
 
+                        if args.target_predicted_answers_path != '':
+                            target_answers_list.append(actual_answer)
+                            predicted_answers_list.append(actual_prediction)
 
-
+    if args.target_predicted_answers_path != '':
+        import json
+        with open(args.target_predicted_answers_path, 'w') as f:
+            json.dump({'targets': target_answers_list, 'predictions': predicted_answers_list}, f)
     #if has_target:
     #    print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
 
