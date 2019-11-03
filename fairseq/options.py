@@ -524,7 +524,7 @@ def add_generation_args(parser):
     group.add_argument('--no-symbolic', action='store_true')
 
     # Save the target and predicted answers to file (for a little analysis)
-    group.add_argument('target-predicted-answers-path', default='', type=str)
+    group.add_argument('--target-predicted-answers-path', default='', type=str)
     # fmt: on
     return group
 
