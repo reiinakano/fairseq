@@ -284,8 +284,8 @@ def main(args):
                                     else:
                                         for char in calc_response:
                                             prev_output_tokens_list.append(tgt_dict.index(char))
-                                        prev_output_tokens_list.append(tgt_dict.index('@'))
-                                        token_idx += len(calc_response) + 1
+                                        #prev_output_tokens_list.append(tgt_dict.index('@'))
+                                        token_idx += len(calc_response)# + 1
 
                             answer_so_far_str = ''
                             for ind in prev_output_tokens_list:
