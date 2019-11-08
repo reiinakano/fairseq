@@ -384,7 +384,7 @@ class SymbolicCalculator():
     def solve_current_equation(self):
         try:
             solution = parse_expr(self.current_equation)
-        except SyntaxError:
+        except Exception:
             return '<err>'
         self.current_equation = ''
         return str(solution)
