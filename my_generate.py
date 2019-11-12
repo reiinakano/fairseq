@@ -394,7 +394,6 @@ class SymbolicCalculator():
 def undo_preprocessing(x: str):
     """Undo tokenize done in preprocessing"""
     x = x.replace('_', ' ')  # _ replaced by spaces
-    x = ' '.join(x)
     return x
 
 
