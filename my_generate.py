@@ -125,6 +125,12 @@ def main(args):
                     single_src_tokens = encoder_input['src_tokens'][sample_iter:sample_iter+1]
                     single_target_tokens = sample['net_input']['prev_output_tokens'][sample_iter:sample_iter+1]
 
+                    if args.input_question:
+                        tokenized_input_question = tokenize_question(args.input_question)
+                        single_src_lengths = torch.LongTensor([len(tokenized_input_question)]).to(single_src_lengths.device)
+                        tokenized_input_question = map(src_dict.index, tokenized_input_question)
+                        single_src_tokens = torch.LongTensor([tokenized_input_question]).to(single_src_tokens.device)
+
                     if args.verbose:
                         print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
                         print('SINGLE TGT TOKENS', single_target_tokens)
@@ -391,8 +397,14 @@ class SymbolicCalculator():
         return str(solution)
 
 
+def tokenize_question(x: str):
+    x = x.replace('\n', '@')  # newlines replaced by @
+    x = x.replace(' ', '_')  # spaces replaced by _
+    return x.split('')
+
+
 def undo_preprocessing(x: str):
-    """Undo tokenize done in preprocessing"""
+    """Undo preprocessing done in dataset generation"""
     x = x.replace('_', ' ')  # _ replaced by spaces
     return x
 

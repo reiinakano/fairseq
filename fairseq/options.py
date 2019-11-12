@@ -525,6 +525,9 @@ def add_generation_args(parser):
 
     # Save the target and predicted answers to file (for a little analysis)
     group.add_argument('--target-predicted-answers-path', default='', type=str)
+
+    # Override and use your own input question
+    group.add_argument('--input-question', default='', type=str)
     # fmt: on
     return group
 
