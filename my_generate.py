@@ -127,11 +127,10 @@ def main(args):
 
                     if args.input_question:
                         tokenized_input_question = tokenize_question(args.input_question)
-                        print(tokenized_input_question)
                         single_src_lengths = torch.LongTensor([len(tokenized_input_question)]).to(single_src_lengths.device)
                         tokenized_input_question = list(map(src_dict.index, tokenized_input_question))
-                        print(tokenized_input_question)
                         single_src_tokens = torch.LongTensor([tokenized_input_question]).to(single_src_tokens.device)
+                        single_target_tokens = torch.LongTensor([[0]]).to(single_target_tokens.device)
 
                     if args.verbose:
                         print('SINGLE SRC TOKENS', single_src_tokens, 'SINGLE SRC LENGTHS', single_src_lengths)
@@ -330,6 +329,9 @@ def main(args):
                         if args.target_predicted_answers_path != '':
                             target_answers_list.append(actual_answer)
                             predicted_answers_list.append(actual_prediction)
+
+                        if args.input_question:
+                            return
 
     if args.target_predicted_answers_path != '':
         import json
