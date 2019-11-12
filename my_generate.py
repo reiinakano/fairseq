@@ -126,9 +126,9 @@ def main(args):
                     single_target_tokens = sample['net_input']['prev_output_tokens'][sample_iter:sample_iter+1]
 
                     if args.input_question:
-                        tokenized_input_question = tokenize_question(args.input_question) + [src_dict.eos()]
+                        tokenized_input_question = tokenize_question(args.input_question)
                         single_src_lengths = torch.LongTensor([len(tokenized_input_question)]).to(single_src_lengths.device)
-                        tokenized_input_question = list(map(src_dict.index, tokenized_input_question))
+                        tokenized_input_question = list(map(src_dict.index, tokenized_input_question)) + [src_dict.eos()]
                         single_src_tokens = torch.LongTensor([tokenized_input_question]).to(single_src_tokens.device)
                         single_target_tokens = torch.LongTensor([[0]]).to(single_target_tokens.device)
 
