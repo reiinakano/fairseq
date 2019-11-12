@@ -200,6 +200,7 @@ def main(args):
                                         if top_indices[i].item() == tgt_dict.index('='):  # resolve any symbolic expressions
                                             token_string = convert_tokens_to_string(seq.tokens)
                                             expr = token_string.split('@')[-1]
+                                            expr = undo_preprocessing(expr)
                                             try:
                                                 calculated_result = str(parse_expr(expr))
                                             except Exception:
@@ -383,11 +384,18 @@ class SymbolicCalculator():
 
     def solve_current_equation(self):
         try:
-            solution = parse_expr(self.current_equation)
+            solution = parse_expr(undo_preprocessing(self.current_equation))
         except Exception:
             return '<err>'
         self.current_equation = ''
         return str(solution)
+
+
+def undo_preprocessing(x: str):
+    """Undo tokenize done in preprocessing"""
+    x = x.replace('@', '\n')  # @ replaced by newlines
+    x = ' '.join(x)
+    return x
 
 
 def cli_main():
