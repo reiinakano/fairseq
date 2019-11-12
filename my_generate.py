@@ -400,7 +400,7 @@ class SymbolicCalculator():
 def tokenize_question(x: str):
     x = x.replace('\n', '@')  # newlines replaced by @
     x = x.replace(' ', '_')  # spaces replaced by _
-    return x.split('')
+    return list(x)
 
 
 def undo_preprocessing(x: str):
