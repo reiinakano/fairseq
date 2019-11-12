@@ -127,8 +127,10 @@ def main(args):
 
                     if args.input_question:
                         tokenized_input_question = tokenize_question(args.input_question)
+                        print(tokenized_input_question)
                         single_src_lengths = torch.LongTensor([len(tokenized_input_question)]).to(single_src_lengths.device)
                         tokenized_input_question = map(src_dict.index, tokenized_input_question)
+                        print(tokenized_input_question)
                         single_src_tokens = torch.LongTensor([tokenized_input_question]).to(single_src_tokens.device)
 
                     if args.verbose:
