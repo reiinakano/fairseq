@@ -330,8 +330,8 @@ def main(args):
                             target_answers_list.append(actual_answer)
                             predicted_answers_list.append(actual_prediction)
 
-                        if args.input_question:
-                            return
+                    if args.input_question:
+                        return
 
     if args.target_predicted_answers_path != '':
         import json
